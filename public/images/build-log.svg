@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" font-family="'Marker Felt', 'Chalkboard SE', 'Comic Sans MS', sans-serif">
+  <rect width="1600" height="1000" fill="#f4e9d4"/>
+  <!-- desk -->
+  <rect y="690" width="1600" height="310" fill="#c98f5a"/>
+  <rect y="690" width="1600" height="14" fill="#a8733f"/>
+  <!-- sticky notes on the wall -->
+  <g transform="rotate(-5 250 200)">
+    <rect x="130" y="110" width="250" height="210" fill="#ffd166"/>
+    <text x="255" y="190" font-size="40" text-anchor="middle" fill="#1f2a44">it works??</text>
+    <text x="255" y="250" font-size="30" text-anchor="middle" fill="#1f2a44">(don't touch it)</text>
+  </g>
+  <g transform="rotate(4 1330 220)">
+    <rect x="1200" y="110" width="270" height="220" fill="#9ad1ff"/>
+    <text x="1335" y="185" font-size="34" text-anchor="middle" fill="#1f2a44">TODO:</text>
+    <text x="1335" y="235" font-size="30" text-anchor="middle" fill="#1f2a44">learn what a</text>
+    <text x="1335" y="278" font-size="30" text-anchor="middle" fill="#1f2a44">"promise" is</text>
+  </g>
+  <g transform="rotate(3 300 470)">
+    <rect x="190" y="390" width="220" height="170" fill="#ff9aa2"/>
+    <text x="300" y="465" font-size="32" text-anchor="middle" fill="#1f2a44">ask why,</text>
+    <text x="300" y="510" font-size="32" text-anchor="middle" fill="#1f2a44">then commit</text>
+  </g>
+  <!-- laptop -->
+  <rect x="520" y="250" width="620" height="410" rx="22" fill="#1f2a44"/>
+  <rect x="546" y="276" width="568" height="358" rx="8" fill="#101728"/>
+  <g font-family="Menlo, monospace" font-size="26">
+    <text x="574" y="330" fill="#ffd166">$ npm run build</text>
+    <rect x="574" y="356" width="330" height="14" rx="7" fill="#3d4a6b"/>
+    <rect x="574" y="388" width="420" height="14" rx="7" fill="#3d4a6b"/>
+    <rect x="574" y="420" width="260" height="14" rx="7" fill="#3d4a6b"/>
+    <text x="574" y="492" fill="#ff7a7a">error: 1 thing broke</text>
+    <text x="574" y="536" fill="#9aa4c7">...fixing it...</text>
+    <text x="574" y="596" fill="#7cf5c4">✓ build passed</text>
+  </g>
+  <path d="M440 690 L520 660 L1140 660 L1220 690 Z" fill="#2b3959"/>
+  <rect x="440" y="690" width="780" height="20" rx="8" fill="#1f2a44"/>
+  <!-- coffee -->
+  <rect x="1290" y="560" width="120" height="140" rx="14" fill="#fffdf5" stroke="#1f2a44" stroke-width="6"/>
+  <path d="M1410 590 q60 10 40 60 q-10 26 -40 22" fill="none" stroke="#1f2a44" stroke-width="6"/>
+  <path d="M1320 530 q-16 -30 6 -56 M1360 530 q-16 -30 6 -56" fill="none" stroke="#b9a98a" stroke-width="6" stroke-linecap="round"/>
+  <!-- notebook -->
+  <g transform="rotate(-8 230 800)">
+    <rect x="90" y="730" width="290" height="190" rx="8" fill="#fbf9f1" stroke="#1f2a44" stroke-width="5"/>
+    <text x="235" y="800" font-size="38" text-anchor="middle" fill="#1f2a44">BUILD LOG</text>
+    <path d="M130 830 h210 M130 860 h170 M130 890 h190" stroke="#2a6fdb" stroke-width="5" stroke-linecap="round" opacity="0.6"/>
+  </g>
+</svg>

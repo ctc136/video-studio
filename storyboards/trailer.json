@@ -1,0 +1,191 @@
+{
+  "title": "Not Not Technical: trailer",
+  "theme": "notebook",
+  "transition": {
+    "type": "fade",
+    "duration": 0.5
+  },
+  "voiceover": {
+    "enabled": true,
+    "voice": "Samantha",
+    "rate": 190
+  },
+  "captions": true,
+  "scenes": [
+    {
+      "template": "title",
+      "id": "title",
+      "duration": 4,
+      "narration": "This is Not Not Technical. A build log, by Chris.",
+      "title": "*Not Not* Technical",
+      "subtitle": "A build log by Chris",
+      "audio": {
+        "src": "voiceover/trailer/fa596165bd12b470.wav",
+        "duration": 3.193,
+        "key": "fa596165bd12b470"
+      }
+    },
+    {
+      "template": "kinetic",
+      "id": "meet-chris",
+      "duration": 3.5,
+      "narration": "Meet Chris. Chris was not technical.",
+      "text": "Meet Chris. *Not* technical.",
+      "audio": {
+        "src": "voiceover/trailer/e41e061665cb3f5f.wav",
+        "duration": 2.258,
+        "key": "e41e061665cb3f5f"
+      }
+    },
+    {
+      "template": "terminal",
+      "id": "first-terminal",
+      "duration": 6.5,
+      "narration": "His first conversation with a terminal went about as well as you'd expect.",
+      "title": "chris: day one",
+      "lines": [
+        "$ hello computer",
+        "zsh: command not found: hello",
+        "$ please?",
+        "zsh: no matches found: please?"
+      ],
+      "audio": {
+        "src": "voiceover/trailer/33b152ca138db075.wav",
+        "duration": 3.911,
+        "key": "33b152ca138db075"
+      }
+    },
+    {
+      "template": "bullets",
+      "id": "beliefs",
+      "duration": 6,
+      "narration": "He thought a terminal was where planes park. And that the cloud was, well, up.",
+      "heading": "Things Chris believed",
+      "items": [
+        "A terminal is where planes park",
+        "The cloud is… up",
+        "Python is a snake. Just a snake."
+      ],
+      "audio": {
+        "src": "voiceover/trailer/72a4ef2ccde77904.wav",
+        "duration": 4.433,
+        "key": "72a4ef2ccde77904"
+      }
+    },
+    {
+      "template": "kinetic",
+      "id": "building",
+      "duration": 3.5,
+      "narration": "Then, against all advice, he started building things.",
+      "text": "Then he started *building.*",
+      "audio": {
+        "src": "voiceover/trailer/0a3307948c4de6ff.wav",
+        "duration": 3.274,
+        "key": "0a3307948c4de6ff"
+      }
+    },
+    {
+      "template": "chart",
+      "id": "errors-chart",
+      "duration": 6,
+      "narration": "Slowly, the error messages started to make sense. Some of them.",
+      "heading": "Error messages Chris understands",
+      "kind": "line",
+      "unit": "%",
+      "data": [
+        {
+          "label": "Day 1",
+          "value": 2
+        },
+        {
+          "label": "Week 2",
+          "value": 9
+        },
+        {
+          "label": "Month 2",
+          "value": 31
+        },
+        {
+          "label": "Now",
+          "value": 64
+        }
+      ],
+      "audio": {
+        "src": "voiceover/trailer/70cf6d822bb256aa.wav",
+        "duration": 3.824,
+        "key": "70cf6d822bb256aa"
+      }
+    },
+    {
+      "template": "stat",
+      "id": "first-try",
+      "duration": 4,
+      "narration": "Number of things that worked on the first try: zero.",
+      "value": 0,
+      "label": "things that worked on the first try",
+      "audio": {
+        "src": "voiceover/trailer/30b4e79c1a90380b.wav",
+        "duration": 2.908,
+        "key": "30b4e79c1a90380b"
+      }
+    },
+    {
+      "template": "image",
+      "id": "the-log",
+      "duration": 5,
+      "narration": "Every build, every bug, and every small win goes in the log.",
+      "src": "images/build-log.svg",
+      "caption": "Every build, bug and small win, written down",
+      "pan": "zoom-in",
+      "audio": {
+        "src": "voiceover/trailer/a7a8ae81bda44856.wav",
+        "duration": 3.434,
+        "key": "a7a8ae81bda44856"
+      }
+    },
+    {
+      "template": "terminal",
+      "id": "lately",
+      "duration": 6,
+      "narration": "These days he ships real things. And usually knows why they work.",
+      "title": "chris: lately",
+      "lines": [
+        "$ git commit -m \"it works and I know why\"",
+        "[main 4f2a9c1] it works and I know why",
+        "$ git push",
+        "✓ shipped"
+      ],
+      "audio": {
+        "src": "voiceover/trailer/7eca12e984abd7f4.wav",
+        "duration": 3.436,
+        "key": "7eca12e984abd7f4"
+      }
+    },
+    {
+      "template": "kinetic",
+      "id": "punchline",
+      "duration": 4.5,
+      "narration": "He's not an engineer. But he's not not technical.",
+      "text": "Not an engineer. But *not not* technical.",
+      "audio": {
+        "src": "voiceover/trailer/6e7e148da10ee1a5.wav",
+        "duration": 2.75,
+        "key": "6e7e148da10ee1a5"
+      }
+    },
+    {
+      "template": "outro",
+      "id": "outro",
+      "duration": 5,
+      "narration": "Not Not Technical. Follow along.",
+      "title": "*Not Not* Technical",
+      "subtitle": "Building in public, one confused commit at a time",
+      "cta": "Follow the build log",
+      "audio": {
+        "src": "voiceover/trailer/761eab33403c0d3e.wav",
+        "duration": 2.26,
+        "key": "761eab33403c0d3e"
+      }
+    }
+  ]
+}
