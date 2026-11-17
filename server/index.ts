@@ -8,7 +8,7 @@ import {checkAssets, listImages} from './assets';
 import {DEFAULT_MODEL, OllamaError, generateStoryboard, listModels} from './ollama';
 import {OUT_DIR, PUBLIC_DIR, ROOT, STORYBOARD_DIR} from './paths';
 import {outputFileFor, renderStoryboard} from './render';
-import {listVoices, synthesizeVoiceover} from './tts';
+import {listVoices, pruneMissingAudio, synthesizeVoiceover} from './tts';
 
 const PORT = Number(process.env.PORT ?? 5177);
 const HOST = '127.0.0.1';
@@ -131,7 +131,7 @@ api.get('/storyboards/:name', async (req, res) => {
   }
   const result = validateStoryboard(json);
   if (!result.ok) throw new HttpError(400, 'The file is not a valid storyboard.', result.errors);
-  res.json({name: slugify(req.params.name), storyboard: result.storyboard});
+  res.json({name: slugify(req.params.name), storyboard: await pruneMissingAudio(result.storyboard)});
 });
 
 api.put('/storyboards/:name', async (req, res) => {
@@ -215,6 +215,9 @@ api.use((_req, _res, next) => next(new HttpError(404, 'Not found')));
 
 app.use('/api', api);
 app.use('/out', express.static(OUT_DIR));
+// Serve public/ ourselves: Vite only knows the files that existed when it
+// started, so freshly generated voiceover and uploads would 404 into the SPA.
+app.use(express.static(PUBLIC_DIR, {index: false}));
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (!req.path.startsWith('/api') && !(err instanceof HttpError)) return next(err);

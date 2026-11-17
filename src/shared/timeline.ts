@@ -21,7 +21,7 @@ export type Timeline = {
 /** Frames of silence before the first line and after every line. */
 const LEAD_IN = 8;
 const GAP = 8;
-const CAPTION_MAX_CHARS = 38;
+const CAPTION_MAX_CHARS = 32;
 
 /** Audio counts only if voiceover is on and it matches the current narration. */
 export function activeAudio(storyboard: Storyboard, scene: Scene) {

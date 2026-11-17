@@ -1,6 +1,8 @@
 import path from 'node:path';
 import {ASPECTS, type Aspect} from '../src/shared/schema';
 import {bundleProject, outputFileFor, renderStoryboard} from '../server/render';
+import {checkAssets} from '../server/assets';
+import {synthesizeVoiceover} from '../server/tts';
 import {fail, loadStoryboardFile, parseArgs} from './cli';
 
 const {positional, flags} = parseArgs(process.argv.slice(2));
@@ -15,8 +17,16 @@ const aspects: Aspect[] =
 if (aspects.length === 0) fail(`Unknown aspect "${aspectFlag}". Use 16:9, 9:16 or both.`);
 if (typeof flags.out === 'string' && aspects.length > 1) fail('--out only works with a single aspect.');
 
-const storyboard = await loadStoryboardFile(file);
+let storyboard = await loadStoryboardFile(file);
 const name = path.basename(file, path.extname(file));
+
+const missing = await checkAssets(storyboard);
+if (missing.length) fail(missing.join('\n  '));
+
+if (storyboard.voiceover.enabled) {
+  console.log(`Speaking narration with "${storyboard.voiceover.voice}"...`);
+  storyboard = await synthesizeVoiceover(storyboard, name);
+}
 
 console.log('Bundling...');
 const serveUrl = await bundleProject();
