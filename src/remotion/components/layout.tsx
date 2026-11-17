@@ -137,18 +137,24 @@ export const Underline: React.FC<{progress: number; width: number}> = ({progress
   const theme = useTheme();
   const {u} = useLayout();
   if (theme.background === 'graph-paper') {
-    const length = 420;
+    // Drawn at its real size (no stretching) so the pen stroke stays even.
+    const height = 26 * u;
+    const sx = width / 400;
+    const sy = height / 26;
+    const pt = (x: number, y: number) => `${x * sx} ${y * sy}`;
+    const d = `M${pt(4, 14)} C ${pt(50, 2)}, ${pt(90, 24)}, ${pt(140, 12)} S ${pt(230, 4)}, ${pt(280, 14)} S ${pt(360, 22)}, ${pt(396, 9)}`;
     return (
-      <svg width={width} height={26 * u} viewBox="0 0 400 26" preserveAspectRatio="none">
+      <svg width={width} height={height} style={{display: 'block', overflow: 'visible'}}>
         <path
-          d="M4 14 C 50 2, 90 24, 140 12 S 230 4, 280 14 S 360 22, 396 9"
+          d={d}
           fill="none"
           stroke={theme.colors.accent}
-          strokeWidth={6}
+          strokeWidth={6 * u}
           strokeLinecap="round"
-          strokeDasharray={length}
-          strokeDashoffset={length * (1 - progress)}
-          vectorEffect="non-scaling-stroke"
+          pathLength={1}
+          strokeDasharray={1}
+          strokeDashoffset={1 - progress}
+          opacity={progress > 0.001 ? 1 : 0}
         />
       </svg>
     );
