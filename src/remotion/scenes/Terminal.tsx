@@ -15,8 +15,8 @@ export function scheduleLines(lines: string[], durationInFrames: number) {
     0,
   );
   const start = 14;
-  // Finish by ~80% of the scene, but never type slower than 2 frames a key.
-  const framesPerUnit = Math.min(2, Math.max(0.25, (durationInFrames * 0.8 - start) / cost));
+  // Finish by ~80% of the scene (however fast that needs), never slower than 2 frames a key.
+  const framesPerUnit = Math.min(2, Math.max(0.02, (durationInFrames * 0.8 - start) / cost));
   let cursor = start;
   return lines.map((line) => {
     const command = isCommand(line);

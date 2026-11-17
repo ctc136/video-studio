@@ -83,12 +83,13 @@ const PANS = ['zoom-in', 'zoom-out', 'left', 'right', 'up', 'down'] as const;
 export const SceneForm: React.FC<{
   scene: Scene;
   images: string[];
-  onChange: (scene: Scene) => void;
+  /** Applied to the latest copy of the scene, so slow uploads can't revert edits. */
+  onPatch: (id: string, patch: Record<string, unknown>) => void;
   onUpload: (file: File) => Promise<string | undefined>;
-}> = ({scene, images, onChange, onUpload}) => {
+}> = ({scene, images, onPatch, onUpload}) => {
   const fileInput = useRef<HTMLInputElement>(null);
   // Every field edits one key of the current scene.
-  const set = (patch: Record<string, unknown>) => onChange({...scene, ...patch} as Scene);
+  const set = (patch: Record<string, unknown>) => onPatch(scene.id!, patch);
 
   const text = (key: string, label: string, opts: {optional?: boolean; hint?: string; multiline?: boolean} = {}) => (
     <Field label={label} hint={opts.hint ?? (opts.optional ? 'optional' : undefined)} wide>

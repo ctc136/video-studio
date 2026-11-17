@@ -107,3 +107,20 @@ test('tidy repairs the usual small-model mistakes', async () => {
   // Settings the model should not control are dropped.
   assert.equal(result.storyboard.voiceover.enabled, false);
 });
+
+test('short scenes still get a caption without voiceover', () => {
+  const storyboard = parseStoryboard({
+    title: 'x',
+    theme: 'notebook',
+    captions: true,
+    scenes: [
+      {template: 'kinetic', duration: 3, text: 'one', narration: 'First line.'},
+      {template: 'kinetic', duration: 1, text: 'two', narration: 'Quick one.'},
+      {template: 'kinetic', duration: 3, text: 'three', narration: 'Last line.'},
+    ],
+  });
+  const {captions, scenes} = buildTimeline(storyboard);
+  assert.deepEqual(captions.map((c) => c.text), ['First line.', 'Quick one.', 'Last line.']);
+  const quick = captions[1];
+  assert.ok(quick.to <= scenes[1].from + scenes[1].durationInFrames);
+});

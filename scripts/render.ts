@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import {ASPECTS, type Aspect} from '../src/shared/schema';
 import {bundleProject, outputFileFor, renderStoryboard} from '../server/render';
@@ -13,7 +14,7 @@ if (!file) {
 
 const aspectFlag = typeof flags.aspect === 'string' ? flags.aspect : '16:9';
 const aspects: Aspect[] =
-  aspectFlag === 'both' ? ['16:9', '9:16'] : aspectFlag in ASPECTS ? [aspectFlag as Aspect] : [];
+  aspectFlag === 'both' ? ['16:9', '9:16'] : Object.hasOwn(ASPECTS, aspectFlag) ? [aspectFlag as Aspect] : [];
 if (aspects.length === 0) fail(`Unknown aspect "${aspectFlag}". Use 16:9, 9:16 or both.`);
 if (typeof flags.out === 'string' && aspects.length > 1) fail('--out only works with a single aspect.');
 
@@ -49,3 +50,5 @@ for (const aspect of aspects) {
   });
   console.log(`✓ ${path.relative(process.cwd(), outFile)}`);
 }
+
+await fs.rm(serveUrl, {recursive: true, force: true});

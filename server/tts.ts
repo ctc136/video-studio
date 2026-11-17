@@ -57,7 +57,10 @@ async function speak(text: string, voice: string, rate: number, outFile: string)
   const input = path.join(tmp, 'line.txt');
   try {
     await fs.writeFile(input, text, 'utf8');
-    await run('say', ['-v', voice, '-r', String(rate), '-o', outFile, '--data-format=LEI16@44100', '-f', input]);
+    // Write next to the target, then rename, so nobody ever reads a half-written file.
+    const partial = `${outFile}.${process.pid}.partial.wav`;
+    await run('say', ['-v', voice, '-r', String(rate), '-o', partial, '--data-format=LEI16@44100', '-f', input]);
+    await fs.rename(partial, outFile);
   } catch (err) {
     const detail = (err as {stderr?: string}).stderr?.trim() || (err as Error).message;
     throw new Error(`The "say" command failed for voice "${voice}": ${detail}`);

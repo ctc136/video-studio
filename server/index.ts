@@ -54,13 +54,28 @@ const jobs = new Map<string, RenderJob>();
 // Renders run one at a time: each one already uses every core.
 let queue: Promise<void> = Promise.resolve();
 
+/**
+ * Run work after everything already queued. Renders and voiceover share this
+ * queue because voiceover writes, and cleans up, the folder renders read from.
+ */
+function serialized<T>(work: () => Promise<T>): Promise<T> {
+  const result = queue.then(work);
+  queue = result.then(
+    () => undefined,
+    () => undefined,
+  );
+  return result;
+}
+
 function enqueueRender(input: unknown, name: string, aspect: Aspect): RenderJob {
   const job: RenderJob = {id: randomUUID(), aspect, status: 'queued', progress: 0};
   jobs.set(job.id, job);
-  // Forget old jobs so the map cannot grow forever.
-  for (const id of [...jobs.keys()].slice(0, -20)) jobs.delete(id);
+  // Forget old finished jobs so the map cannot grow forever. Never drop
+  // queued or running ones: the UI is still polling them.
+  const finished = [...jobs.values()].filter((j) => j.status === 'done' || j.status === 'error');
+  for (const old of finished.slice(0, -20)) jobs.delete(old.id);
 
-  queue = queue.then(async () => {
+  void serialized(async () => {
     try {
       let storyboard = requireStoryboard(input);
       const missing = await checkAssets(storyboard);
@@ -156,8 +171,14 @@ api.post(
     const base = slugify(path.parse(String(req.query.name ?? 'image')).name);
     const dir = path.join(PUBLIC_DIR, 'images');
     await fs.mkdir(dir, {recursive: true});
-    await fs.writeFile(path.join(dir, base + ext), req.body);
-    res.json({src: `images/${base}${ext}`});
+    // Never replace an existing image: other storyboards may use it, and the
+    // browser would keep showing the cached old one.
+    let file = base + ext;
+    for (let n = 2; await fs.stat(path.join(dir, file)).then(() => true, () => false); n++) {
+      file = `${base}-${n}${ext}`;
+    }
+    await fs.writeFile(path.join(dir, file), req.body, {flag: 'wx'});
+    res.json({src: `images/${file}`});
   },
 );
 
@@ -169,7 +190,7 @@ api.get('/voices', async (_req, res) => {
 api.post('/voiceover', async (req, res) => {
   const storyboard = requireStoryboard(req.body?.storyboard);
   const name = String(req.body?.name ?? storyboard.title);
-  res.json({storyboard: await synthesizeVoiceover(storyboard, name)});
+  res.json({storyboard: await serialized(() => synthesizeVoiceover(storyboard, name))});
 });
 
 api.get('/models', async (_req, res) => {
@@ -199,7 +220,7 @@ api.post('/generate', async (req, res) => {
 
 api.post('/render', (req, res) => {
   const aspect = req.body?.aspect as Aspect;
-  if (!(aspect in ASPECTS)) throw new HttpError(400, 'aspect must be "16:9" or "9:16".');
+  if (typeof aspect !== 'string' || !Object.hasOwn(ASPECTS, aspect)) throw new HttpError(400, 'aspect must be "16:9" or "9:16".');
   requireStoryboard(req.body?.storyboard);
   const name = String(req.body?.name || 'untitled');
   res.json(enqueueRender(req.body.storyboard, name, aspect));

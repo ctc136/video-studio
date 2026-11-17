@@ -22,6 +22,7 @@ export type Timeline = {
 const LEAD_IN = 8;
 const GAP = 8;
 const CAPTION_MAX_CHARS = 32;
+const MIN_CAPTION = 15;
 
 /** Audio counts only if voiceover is on and it matches the current narration. */
 export function activeAudio(storyboard: Storyboard, scene: Scene) {
@@ -94,7 +95,13 @@ export function buildTimeline(storyboard: Storyboard): Timeline {
       const start = audioTiming ? audioTiming.from : cursor + lead;
       const end = audioTiming
         ? audioTiming.from + audioTiming.durationInFrames
-        : cursor + durationInFrames - (index === scenes.length - 1 ? GAP : transitionFrames);
+        : Math.min(
+            cursor + durationInFrames,
+            Math.max(
+              start + MIN_CAPTION,
+              cursor + durationInFrames - (index === scenes.length - 1 ? GAP : transitionFrames),
+            ),
+          );
       const chunks = splitCaption(scene.narration);
       const totalChars = chunks.reduce((n, c) => n + c.length, 0);
       let t = start;

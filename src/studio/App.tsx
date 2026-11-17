@@ -57,6 +57,7 @@ export const App: React.FC = () => {
   const [jsonText, setJsonText] = useState<string | null>(null);
 
   const playerRef = useRef<PlayerRef>(null);
+  const generationRef = useRef(0);
 
   const validation = useMemo(() => validateStoryboard(draft), [draft]);
   useEffect(() => {
@@ -65,6 +66,8 @@ export const App: React.FC = () => {
 
   const timeline = useMemo(() => buildTimeline(valid), [valid]);
   const dirty = JSON.stringify(draft) !== savedJson;
+  // The timeline follows the last valid storyboard, so look scenes up by id.
+  const timingFor = (id: string | undefined) => timeline.scenes[valid.scenes.findIndex((s) => s.id === id)];
   const selected = draft.scenes.find((s) => s.id === selectedId) ?? draft.scenes[0];
   const voiceoverStale = needsVoiceover(valid);
 
@@ -80,6 +83,7 @@ export const App: React.FC = () => {
     setSavedJson(saved ? JSON.stringify(storyboard) : '');
     setSelectedId(storyboard.scenes[0]?.id);
     setJsonText(null);
+    generationRef.current += 1;
     setJobs({});
     playerRef.current?.seekTo(0);
   }, []);
@@ -255,7 +259,19 @@ export const App: React.FC = () => {
     setBusy('voiceover');
     try {
       const res = await api.voiceover(name, validation.storyboard);
-      setDraft(res.storyboard);
+      // Merge only the audio, by scene id, so edits made while it spoke survive.
+      // Audio is ignored automatically if its narration has since changed.
+      const audioById = new Map(res.storyboard.scenes.map((s) => [s.id, s.audio]));
+      setDraft((d) => ({
+        ...d,
+        scenes: d.scenes.map((s) => {
+          if (!audioById.has(s.id)) return s;
+          const audio = audioById.get(s.id);
+          if (audio) return {...s, audio};
+          const {audio: _none, ...rest} = s;
+          return rest as Scene;
+        }),
+      }));
       setNotice({kind: 'ok', text: 'Voiceover ready. Scene lengths now match the audio.'});
     } catch (err) {
       fail(err);
@@ -269,15 +285,19 @@ export const App: React.FC = () => {
       setNotice({kind: 'error', text: 'Fix the problems below before exporting.'});
       return;
     }
+    // Opening another storyboard bumps the generation and stops this loop.
+    const generation = generationRef.current;
+    const current = () => generation === generationRef.current;
     try {
       let job = await api.startRender(name, validation.storyboard, target);
-      setJobs((j) => ({...j, [target]: job}));
-      while (job.status !== 'done' && job.status !== 'error') {
+      if (current()) setJobs((j) => ({...j, [target]: job}));
+      while (current() && job.status !== 'done' && job.status !== 'error') {
         await new Promise((r) => setTimeout(r, 600));
         job = await api.renderStatus(job.id);
-        setJobs((j) => ({...j, [target]: job}));
+        if (current()) setJobs((j) => ({...j, [target]: job}));
       }
     } catch (err) {
+      if (!current()) return;
       setJobs((j) => ({...j, [target]: undefined}));
       fail(err);
     }
@@ -484,13 +504,13 @@ export const App: React.FC = () => {
                     <span className="grip" aria-hidden>
                       ⋮⋮
                     </span>
-                    <span className="scene-index">{playingIndex === i ? '▶' : i + 1}</span>
+                    <span className="scene-index">{valid.scenes[playingIndex]?.id === scene.id ? '▶' : i + 1}</span>
                     <span className="scene-text">
                       <span className={`badge badge-${scene.template}`}>{TEMPLATE_LABELS[scene.template]}</span>
                       <span className="scene-summary">{sceneSummary(scene) || '—'}</span>
                     </span>
                     <span className="scene-duration">
-                      {timeline.scenes[i] ? formatSeconds(timeline.scenes[i].durationInFrames / FPS) : ''}
+                      {timingFor(scene.id) ? formatSeconds(timingFor(scene.id)!.durationInFrames / FPS) : ''}
                     </span>
                   </button>
                   {scene.id === selected?.id ? (
@@ -639,8 +659,8 @@ export const App: React.FC = () => {
                     </span>
                     <input
                       type="range"
-                      min={120}
-                      max={260}
+                      min={90}
+                      max={360}
                       step={5}
                       value={draft.voiceover.rate}
                       onChange={(e) => update({voiceover: {...draft.voiceover, rate: Number(e.target.value)}})}
@@ -676,7 +696,9 @@ export const App: React.FC = () => {
                 scene={selected}
                 images={images}
                 onUpload={upload}
-                onChange={(scene) => setScenes((scenes) => scenes.map((s) => (s.id === scene.id ? scene : s)))}
+                onPatch={(id, patch) =>
+                  setScenes((scenes) => scenes.map((s) => (s.id === id ? ({...s, ...patch} as Scene) : s)))
+                }
               />
             </div>
           ) : null}

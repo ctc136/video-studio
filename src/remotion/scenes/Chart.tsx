@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useId} from 'react';
 import {Easing, interpolate, spring, useCurrentFrame} from 'remotion';
 import type {SceneOf} from '../../shared/schema';
 import {Heading, SceneFrame, riseIn, useEnter, useLayout, useTheme} from '../components/layout';
@@ -116,6 +116,8 @@ const Line: React.FC<Props & {width: number; height: number}> = ({scene, width, 
   const frame = useCurrentFrame();
   const theme = useTheme();
   const {u, fps, durationInFrames} = useLayout();
+  // Two line charts are mounted at once during a transition: ids must differ.
+  const clipId = `line-reveal-${useId().replace(/:/g, '')}`;
   const {data} = scene;
   const max = Math.max(...data.map((d) => d.value), 1e-9);
   const decimals = decimalsFor(data.map((d) => d.value));
@@ -147,11 +149,11 @@ const Line: React.FC<Props & {width: number; height: number}> = ({scene, width, 
       <div style={{position: 'relative', height, borderBottom: `${4 * u}px solid ${theme.colors.ink}`}}>
         <svg width={width} height={height} style={{position: 'absolute', left: 0, top: 0, overflow: 'visible'}}>
           <defs>
-            <clipPath id="line-reveal">
+            <clipPath id={clipId}>
               <rect x={0} y={0} width={interpolate(drawn, lengths, points.map((p) => p.x))} height={height} />
             </clipPath>
           </defs>
-          <path d={area} fill={theme.colors.accent2} opacity={0.14} clipPath="url(#line-reveal)" />
+          <path d={area} fill={theme.colors.accent2} opacity={0.14} clipPath={`url(#${clipId})`} />
           <path
             d={path}
             fill="none"

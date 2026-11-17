@@ -33,20 +33,25 @@ export async function renderStoryboard(options: {
   const {storyboard, aspect, outFile, onProgress} = options;
   await fs.mkdir(path.dirname(outFile), {recursive: true});
 
+  const ownBundle = !options.serveUrl;
   const serveUrl =
     options.serveUrl ??
     (await bundleProject((percent) => onProgress?.({stage: 'bundling', progress: percent / 100})));
 
-  const inputProps = {storyboard, aspect};
-  const composition = await selectComposition({serveUrl, id: 'Storyboard', inputProps});
-
-  await renderMedia({
-    composition,
-    serveUrl,
-    codec: 'h264',
-    outputLocation: outFile,
-    inputProps,
-    onProgress: ({progress}) => onProgress?.({stage: 'rendering', progress}),
-  });
-  return outFile;
+  try {
+    const inputProps = {storyboard, aspect};
+    const composition = await selectComposition({serveUrl, id: 'Storyboard', inputProps});
+    await renderMedia({
+      composition,
+      serveUrl,
+      codec: 'h264',
+      outputLocation: outFile,
+      inputProps,
+      onProgress: ({progress}) => onProgress?.({stage: 'rendering', progress}),
+    });
+    return outFile;
+  } finally {
+    // Each bundle is a full copy of public/ in a temp folder: don't leave it behind.
+    if (ownBundle) await fs.rm(serveUrl, {recursive: true, force: true});
+  }
 }
