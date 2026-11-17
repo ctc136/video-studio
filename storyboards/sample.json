@@ -1,0 +1,83 @@
+{
+  "title": "Video Studio sample",
+  "theme": "notebook",
+  "transition": {"type": "fade", "duration": 0.5},
+  "voiceover": {"enabled": false, "voice": "Samantha", "rate": 185},
+  "captions": false,
+  "scenes": [
+    {
+      "template": "title",
+      "duration": 3.5,
+      "title": "One JSON file. One *video.*",
+      "subtitle": "A tour of all eight scene templates",
+      "narration": "One JSON file in, one video out. Here is the tour."
+    },
+    {
+      "template": "kinetic",
+      "duration": 3.5,
+      "text": "Words that *land* one at a *time*",
+      "narration": "Kinetic text lands one word at a time."
+    },
+    {
+      "template": "bullets",
+      "duration": 5,
+      "heading": "How it works",
+      "items": [
+        "Write a storyboard in JSON",
+        "Pick a theme and an aspect ratio",
+        "Render it to MP4 on your own machine"
+      ],
+      "narration": "Write a storyboard, pick a theme, and render it locally."
+    },
+    {
+      "template": "stat",
+      "duration": 3.5,
+      "value": 0,
+      "prefix": "$",
+      "label": "spent on paid APIs",
+      "narration": "Total spent on paid APIs: zero dollars."
+    },
+    {
+      "template": "chart",
+      "duration": 4.5,
+      "heading": "Scenes rendered per coffee",
+      "kind": "bar",
+      "data": [
+        {"label": "Mon", "value": 3},
+        {"label": "Tue", "value": 5},
+        {"label": "Wed", "value": 4},
+        {"label": "Thu", "value": 8},
+        {"label": "Fri", "value": 13}
+      ],
+      "narration": "Charts build themselves, bar by bar."
+    },
+    {
+      "template": "image",
+      "duration": 4,
+      "src": "images/mountains.svg",
+      "caption": "Any image, with a slow pan",
+      "pan": "right",
+      "narration": "Images get a slow, steady pan."
+    },
+    {
+      "template": "terminal",
+      "duration": 5,
+      "title": "video-studio",
+      "lines": [
+        "$ npm run render -- storyboards/sample.json",
+        "Bundling...",
+        "Rendering 870 frames",
+        "✓ out/sample-16x9.mp4"
+      ],
+      "narration": "The terminal types out your commands."
+    },
+    {
+      "template": "outro",
+      "duration": 3.5,
+      "title": "Now make *yours*",
+      "subtitle": "Edit the storyboard, hit export",
+      "cta": "npm run studio",
+      "narration": "Now go make yours."
+    }
+  ]
+}
