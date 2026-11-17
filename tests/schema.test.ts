@@ -91,3 +91,19 @@ test('splitCaption keeps lines short and loses no words', () => {
   assert.equal(chunks.join(' '), text);
   assert.ok(chunks.every((c) => c.length <= 38));
 });
+
+test('tidy repairs the usual small-model mistakes', async () => {
+  const {tidy, extractJson} = await import('../server/ollama');
+  const reply = '```json\n{"storyboard": {"title": "T", "theme": "midnight", "voiceover": {"enabled": true}, "scenes": [' +
+    '{"template": "Bullet", "duration": "5 seconds", "items": ["a"], "narration": "Say *this*", "heading": null},' +
+    '{"template": "stat", "duration": 99, "value": "75%", "label": "% of tools unused"}]}}\n```';
+  const result = validateStoryboard(tidy(extractJson(reply)));
+  assert.ok(result.ok);
+  const [bullets, stat] = result.storyboard.scenes;
+  assert.equal(bullets.template, 'bullets');
+  assert.equal(bullets.duration, 5);
+  assert.equal(bullets.narration, 'Say this');
+  assert.deepEqual([stat.duration, (stat as any).value, (stat as any).suffix, (stat as any).label], [12, 75, '%', 'of tools unused']);
+  // Settings the model should not control are dropped.
+  assert.equal(result.storyboard.voiceover.enabled, false);
+});

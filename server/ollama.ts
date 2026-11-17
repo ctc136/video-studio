@@ -1,10 +1,16 @@
 import {STORYBOARD_GUIDE} from '../src/shared/guide';
-import {type Storyboard, THEME_IDS, type ThemeId, validateStoryboard} from '../src/shared/schema';
+import {
+  type Storyboard,
+  THEME_IDS,
+  type ThemeId,
+  validateStoryboard,
+} from '../src/shared/schema';
 import {checkAssets, listImages} from './assets';
 
 const OLLAMA_URL = process.env.OLLAMA_HOST ?? 'http://127.0.0.1:11434';
 export const DEFAULT_MODEL = process.env.OLLAMA_MODEL ?? 'gemma3';
 const MAX_ATTEMPTS = 4;
+const SAMPLE_IMAGE = 'images/mountains.svg';
 
 type Message = {role: 'system' | 'user' | 'assistant'; content: string};
 
@@ -23,13 +29,30 @@ export async function listModels(): Promise<string[]> {
   }
 }
 
+/**
+ * A loose JSON schema for Ollama's structured output. It pins down only the
+ * top level, because without it small models often answer with an empty
+ * object. Scenes are left as free-form objects on purpose: constraining their
+ * fields makes the model skip the optional ones. The real per-template rules
+ * are enforced afterwards by validateStoryboard(), with retries.
+ */
+export const OUTPUT_SHAPE = {
+  type: 'object',
+  properties: {
+    title: {type: 'string'},
+    theme: {type: 'string', enum: [...THEME_IDS]},
+    scenes: {type: 'array', minItems: 3, items: {type: 'object'}},
+  },
+  required: ['title', 'theme', 'scenes'],
+};
+
 async function chat(model: string, messages: Message[]): Promise<string> {
   let res: Response;
   try {
     res = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({model, messages, stream: false, format: 'json', options: {temperature: 0.7}}),
+      body: JSON.stringify({model, messages, stream: false, format: OUTPUT_SHAPE, options: {temperature: 0.7}}),
       signal: AbortSignal.timeout(240_000),
     });
   } catch (err) {
@@ -64,6 +87,29 @@ export function extractJson(reply: string): unknown {
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
+/** Near-miss template names small models reach for. */
+const TEMPLATE_ALIASES: Record<string, string> = {
+  bullet: 'bullets',
+  list: 'bullets',
+  bullet_reveal: 'bullets',
+  stats: 'stat',
+  statistic: 'stat',
+  counter: 'stat',
+  number: 'stat',
+  kinetic_text: 'kinetic',
+  text: 'kinetic',
+  title_card: 'title',
+  intro: 'title',
+  outro_card: 'outro',
+  end: 'outro',
+  graph: 'chart',
+  bar: 'chart',
+  line: 'chart',
+  code: 'terminal',
+  console: 'terminal',
+  photo: 'image',
+};
+
 const toNumber = (v: unknown) => {
   if (typeof v !== 'string') return v;
   const n = Number(v.replace(/[^0-9.+-]/g, ''));
@@ -83,9 +129,25 @@ export function tidy(raw: unknown): unknown {
     const out: Record<string, unknown> = {...scene};
     delete out.audio;
     delete out.id;
+    if (typeof out.template === 'string') {
+      const template = out.template.trim().toLowerCase().replace(/[\s-]+/g, '_');
+      out.template = TEMPLATE_ALIASES[template] ?? template;
+    }
+    // "% of tools unused" as a label means the percent sign is the suffix.
+    if (out.template === 'stat' && typeof out.label === 'string' && !out.suffix) {
+      const percent = out.label.match(/^%\s*(.+)$/);
+      if (percent) Object.assign(out, {suffix: '%', label: percent[1]});
+    }
+    // A percent sign goes after the number, whatever the model thinks.
+    if (out.template === 'stat' && out.prefix === '%' && !out.suffix) {
+      delete out.prefix;
+      out.suffix = '%';
+    }
     const duration = toNumber(out.duration);
     out.duration = typeof duration === 'number' ? Math.min(12, Math.max(2, duration)) : duration;
     if ('value' in out) out.value = toNumber(out.value);
+    // Emphasis marks belong on screen, not in the spoken line.
+    if (typeof out.narration === 'string') out.narration = out.narration.replace(/\*/g, '');
     if (Array.isArray(out.data)) {
       out.data = out.data.map((d) => (isRecord(d) ? {...d, label: String(d.label ?? ''), value: toNumber(d.value)} : d));
     }
@@ -109,7 +171,8 @@ export async function generateStoryboard(options: {
   if (!concept) throw new OllamaError('Type a concept first.');
   const model = options.model || DEFAULT_MODEL;
   const seconds = Math.min(120, Math.max(10, options.seconds ?? 30));
-  const images = await listImages();
+  // The bundled sample image is not offered: models use it whether it fits or not.
+  const images = (await listImages()).filter((src) => src !== SAMPLE_IMAGE);
 
   const messages: Message[] = [
     {role: 'system', content: STORYBOARD_GUIDE},
@@ -137,6 +200,11 @@ export async function generateStoryboard(options: {
       const result = validateStoryboard(candidate);
       if (result.ok) {
         errors = await checkAssets(result.storyboard);
+        result.storyboard.scenes.forEach((scene, i) => {
+          if (scene.template === 'image' && !images.includes(scene.src)) {
+            errors.push(`scenes[${i}] (image scene): there is no suitable image, use a different template`);
+          }
+        });
         if (errors.length === 0) {
           const done = {attempt, ok: true, errors: []};
           attempts.push(done);

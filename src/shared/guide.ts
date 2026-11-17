@@ -24,7 +24,7 @@ plus the fields for its template. Use ONLY these fields:
 title    -> "title" (max 60 chars), "subtitle" (optional)
 kinetic  -> "text": one punchy line, max 12 words. Wrap 1-2 key words in *asterisks* to emphasise them.
 bullets  -> "heading" (optional), "items": array of 2-5 short strings
-stat     -> "value": a NUMBER (no quotes, no units), "prefix" (optional, e.g. "$"), "suffix" (optional, e.g. "%" or "x"), "label": what the number means
+stat     -> "value": a NUMBER (no quotes, no units), "prefix" (optional symbol before the number, e.g. "$"), "suffix" (optional symbol after it, e.g. "%" or "x", max 3 characters), "label": a short phrase saying what the number means. Example: value 90, suffix "%", label "of shortcuts go unused" shows "90%".
 chart    -> "heading" (optional), "kind": "bar" | "line", "unit" (optional, e.g. "%"), "data": array of 2-6 objects {"label": short string, "value": number >= 0}
 image    -> "src": path of an image file, "caption" (optional), "pan": "left" | "right" | "up" | "down" | "zoom-in" | "zoom-out"
 terminal -> "title" (optional), "lines": array of 2-6 strings. Lines starting with "$ " are typed as commands; other lines are printed as output.
